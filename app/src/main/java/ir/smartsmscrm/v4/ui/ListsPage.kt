@@ -58,6 +58,7 @@ import kotlinx.coroutines.withContext
     var adding by remember {mutableStateOf(false)}
     var addPhone by remember {mutableStateOf("")}
     var importExpanded by remember {mutableStateOf(false)}
+    var importError by remember {mutableStateOf("")}
     var showListCreate by remember {mutableStateOf(false)}
     var importPhoneHelp by remember {mutableStateOf(false)}
     var moreExpanded by remember {mutableStateOf(false)}
@@ -231,7 +232,8 @@ import kotlinx.coroutines.withContext
                 Box {
                     IconButton(onClick={moreExpanded=true}){ Icon(Icons.Outlined.MoreVert,contentDescription="عملیات گروه") }
                     DropdownMenu(expanded=moreExpanded,onDismissRequest={moreExpanded=false}) {
-                        DropdownMenuItem(text={Text("ورود گروهی و VCF")},leadingIcon={Icon(Icons.Outlined.FileUpload,null)},onClick={moreExpanded=false;importExpanded=!importExpanded})
+                        DropdownMenuItem(text={Text("ورود سریع شماره‌ها")},leadingIcon={Icon(Icons.Outlined.ContentPaste,null)},onClick={moreExpanded=false;importError="";importExpanded=true})
+                        DropdownMenuItem(text={Text("ورود فایل VCF")},leadingIcon={Icon(Icons.Outlined.FileUpload,null)},onClick={moreExpanded=false;vcfPicker.launch(arrayOf("text/x-vcard","text/vcard","*/*"))})
                         if(current!=1L) DropdownMenuItem(text={Text("تغییر نام گروه")},leadingIcon={Icon(Icons.Outlined.Edit,null)},onClick={moreExpanded=false;changedName=chosen?.name.orEmpty();rename=true})
                         if(current!=1L) DropdownMenuItem(text={Text("حذف گروه")},leadingIcon={Icon(Icons.Outlined.DeleteOutline,null)},onClick={moreExpanded=false;deleteMode=1})
                     }
@@ -242,23 +244,12 @@ import kotlinx.coroutines.withContext
                 Button(onClick={adding=true;addPhone="";changedName="";editProduct="";editNotes="";editCompany="";editAddress=""},modifier=Modifier.weight(1f)) {
                     Icon(Icons.Outlined.PersonAdd,null);Spacer(Modifier.width(6.dp));Text("مخاطب جدید")
                 }
-                OutlinedButton(onClick={importExpanded=!importExpanded},modifier=Modifier.weight(1f)){
+                OutlinedButton(onClick={importError="";importExpanded=true},modifier=Modifier.weight(1f)){
                     Icon(Icons.Outlined.FileUpload,null);Spacer(Modifier.width(5.dp));Text("ورود شماره")
                 }
             }
-            if(importExpanded) CardPanel {
-                Text("ورود سریع شماره‌ها",style=MaterialTheme.typography.titleMedium)
-                Muted("هر شماره در یک خط؛ امکان واردکردن VCF فارسی هم وجود دارد.")
-                OutlinedTextField(paste,{paste=it},modifier=Modifier.fillMaxWidth().heightIn(min=90.dp),
-                    label={Text("شماره‌ها")},placeholder={Text("0912...\n0913...،نام،محصول تولیدی")})
-                Row(horizontalArrangement=Arrangement.spacedBy(8.dp)) {
-                    Button(onClick={
-                        try {val r=store.importNumbers(current!!,paste);result="${r.added} جدید، ${r.duplicates} تکراری، ${r.invalid} نامعتبر";paste="";tick++}
-                        catch(e:Exception){result=e.message?:"خطا در ورود"}
-                    },enabled=paste.isNotBlank(),modifier=Modifier.weight(1f)){Text("ثبت شماره‌ها")}
-                    OutlinedButton(onClick={vcfPicker.launch(arrayOf("text/x-vcard","text/vcard","*/*"))},modifier=Modifier.weight(1f)){Text("فایل VCF")}
-                }
-            }
+            // The quick-import editor is rendered in a dialog below, not in the group page.
+            // A long pasted list must never push the save button off-screen.
             if(result.isNotBlank()) {Spacer(Modifier.height(6.dp));Muted(result)}
             Spacer(Modifier.height(8.dp))
             OutlinedTextField(filter,{filter=it;recipientPage=0;selected=emptySet()},
@@ -308,6 +299,65 @@ import kotlinx.coroutines.withContext
             }
         }
     }
+    if(importExpanded && current!=null) AlertDialog(
+        onDismissRequest={ if(!busy) importExpanded=false },
+        title={Text("ورود سریع شماره‌ها")},
+        text={
+            Column(verticalArrangement=Arrangement.spacedBy(8.dp)) {
+                Text("هر شماره در یک خط وارد شود. حتی با چند هزار شماره، کادر اسکرول می‌شود و دکمه ثبت در پایین پنجره باقی می‌ماند.",
+                    style=MaterialTheme.typography.bodySmall)
+                OutlinedTextField(
+                    value=paste,
+                    onValueChange={paste=it},
+                    label={Text("شماره‌ها")},
+                    placeholder={Text("0912...\n0913...،نام،محصول تولیدی")},
+                    modifier=Modifier.fillMaxWidth(),
+                    minLines=3,
+                    maxLines=5,
+                    enabled=!busy
+                )
+                if(importError.isNotBlank()) {
+                    Text(importError, color=MaterialTheme.colorScheme.error,
+                        style=MaterialTheme.typography.bodySmall)
+                }
+                if(busy) {
+                    LinearProgressIndicator(modifier=Modifier.fillMaxWidth())
+                    Text("در حال ثبت شماره‌ها؛ لطفاً عملیات را تکرار نکنید.",
+                        style=MaterialTheme.typography.bodySmall)
+                }
+            }
+        },
+        confirmButton={
+            Button(onClick={
+                val groupId=current ?: return@Button
+                val numbers=paste
+                importError=""
+                scope.launch {
+                    busy=true
+                    try {
+                        val r=withContext(Dispatchers.IO){store.importNumbers(groupId,numbers)}
+                        result="${r.added} جدید، ${r.duplicates} تکراری، ${r.invalid} نامعتبر"
+                        paste=""
+                        importExpanded=false
+                        recipientPage=0
+                        tick++
+                    } catch(e:Exception) {
+                        importError="خطا در ورود شماره‌ها: ${e.message ?: "خطای نامشخص"}"
+                        result=importError
+                    } finally { busy=false }
+                }
+            },enabled=paste.isNotBlank() && !busy) {Text(if(busy)"در حال ثبت…" else "ثبت شماره‌ها")}
+        },
+        dismissButton={
+            Row(verticalAlignment=Alignment.CenterVertically) {
+                TextButton(onClick={
+                    importExpanded=false
+                    vcfPicker.launch(arrayOf("text/x-vcard","text/vcard","*/*"))
+                },enabled=!busy){Text("فایل VCF")}
+                TextButton(onClick={importExpanded=false},enabled=!busy){Text("انصراف")}
+            }
+        }
+    )
     if(importPhoneHelp) AlertDialog(onDismissRequest={importPhoneHelp=false},
         title={Text("ورود مخاطبین گوشی")},
         text={Text("با اجازه شما، شماره‌های موبایل از دفترچه تلفن سامسونگ در یک گروه مستقل به نام «مخاطبین گوشی» کپی می‌شوند. شماره‌های تکراری در همان گروه دوباره ثبت نمی‌شوند و دفترچه اصلی گوشی تغییر نمی‌کند.")},
