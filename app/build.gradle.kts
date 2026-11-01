@@ -10,8 +10,8 @@ android {
         applicationId = "ir.smartsmscrm.campaignv45"
         minSdk = 26
         targetSdk = 35
-        versionCode = 9
-        versionName = "0.4.5-uiux"
+        versionCode = 10
+        versionName = "0.4.5.1-importfix"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
     buildFeatures { compose = true }
