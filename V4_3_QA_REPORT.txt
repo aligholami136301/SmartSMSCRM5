@@ -1,0 +1,16 @@
+Smart SMS CRM V4.3 - Static QA, 2026-10-31
+==================================================
+PASS: SendService.kt byte-identical to V4.2.3 (working phone version).
+PASS: SQLiteOpenHelper database schema version remains 4.
+PASS: Independent Android applicationId ir.smartsmscrm.campaignv43.
+PASS: RTL right-side navigation drawer; no bottom navbar.
+PASS: Contacts filter and selected-all across pages preserved.
+PASS: Batch group transfer implemented without modifying campaign queue.
+PASS: Simulation with 2,205 recipients: 2,204 moved, 1 duplicate skipped, queue 2,205 unchanged.
+PASS: Campaign queue pagination checked across 23 pages of size 100.
+PASS: No Kotlin parser syntax errors detected with available standalone kotlinc 1.9 parser.
+PASS: AndroidManifest.xml parses as XML.
+PASS: GitHub workflow included at .github/workflows/android-apk.yml.
+NOT VERIFIED: Android compileDebugKotlin, testDebugUnitTest, assembleDebug (no Android SDK/Gradle present).
+NOT VERIFIED: Samsung S25 runtime, SMS sending, permissions, foreground service behavior.
+Caution: Standalone kotlinc parser cannot resolve Android/Compose symbols; absence of syntax errors is not a successful Android build.

@@ -1,0 +1,18 @@
+PASS | send engine byte identical to V4.4
+PASS | database byte identical to V4.4
+PASS | no bottom navigation
+PASS | direct home to campaign
+PASS | live campaign refresh
+PASS | visible pause near top
+PASS | details paged 100
+PASS | resend consent preserved
+PASS | sender engine untouched
+PASS | contacts import permission
+PASS | global contact search
+PASS | safeguards & backup unchanged
+PASS | separate install app ID
+PASS | github workflow
+PASS | icon exists
+PASS | Kotlin bracket structure
+
+Android SDK not installed: compile and Samsung behavior are UNVERIFIED.

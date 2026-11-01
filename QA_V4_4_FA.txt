@@ -1,0 +1,9 @@
+Smart SMS CRM V4.4
+
+Tests performed offline:
+- SQLite global search across address/company/product/group and 2205-row pagination: PASS.
+- Source inspection: AndroidManifest READ_CONTACTS added, group import permission gated.
+- SendService.kt unchanged compared to V4.3 source: pending binary equality check.
+- No Android SDK/Gradle installed locally: full APK build NOT VERIFIED.
+- Phone-contact read and runtime permission: Samsung S25 test REQUIRED.
+- Campaign UI updates: Android device test REQUIRED.

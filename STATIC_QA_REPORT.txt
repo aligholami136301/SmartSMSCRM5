@@ -1,0 +1,15 @@
+Smart SMS CRM V4.2 — Static QA (2026-10-31)
+PASS: SQL V4.2 schema and indexes
+PASS: SQL v1-v3 migration preserves existing rows
+PASS: 2205 queue rows paged without truncation or duplication
+PASS: SENT status filter paging
+PASS: Contacts pagination and full selection API present
+PASS: Explicit validation for phone edits
+PASS: Permanent trash delete and empty-trash API present
+PASS: Campaign archive/remove with independent history
+PASS: Delivered callback status separate from SMS sent status
+PASS: Debug APK workflow, distinct package ID, and actual application icon
+PASS: Kotlin smoke tests for Iranian phone normalization, paste duplicates, Persian VCF
+NOT TESTED: Android/Compose compilation (SDK and Gradle unavailable here)
+NOT TESTED: Runtime SMS sending, SIM selection, permission dialogs, Android background service on S25
+IMPORTANT: Source ZIP is not a verified APK. Keep original V4 installed and back up first.
