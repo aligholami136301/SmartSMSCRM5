@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.List
 import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.*
@@ -107,7 +108,7 @@ fun ReportsPage(store: Store) {
         if (finalList.isEmpty()) {
             EmptyView(
                 message = "کمپینی مطابق فیلتر پیدا نشد.",
-                icon = Icons.Outlined.BarChart
+                icon = Icons.Outlined.List
             )
         } else {
             LazyColumn(
